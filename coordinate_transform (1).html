@@ -1,0 +1,113 @@
+
+<!DOCTYPE html>
+<html xmlns:mso="urn:schemas-microsoft-com:office:office" xmlns:msdt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882">
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.7.5/proj4.js"></script>
+  <script>
+    proj4.defs("NAD83CSRS_Scotford_Refinery", "+proj=aeqd +lat_0=53.7710151 +lon_0=-113.1300795 +x_0=0 +y_0=0 +azimuth=0.092978 +k=1 +units=mm +datum=NAD83 +no_defs");
+    proj4.defs("NAD83CSRS_Scotford_Chemicals", "+proj=aeqd +lat_0=53.79606851 +lon_0=-113.07496551 +x_0=0 +y_0=0 +azimuth=269.9522 +k=1 +units=mm +datum=NAD83 +no_defs");
+
+    function transformRefinery() {
+      const lat = parseFloat(document.getElementById('lat_refinery').value);
+      const lon = parseFloat(document.getElementById('lon_refinery').value);
+      if (isNaN(lat) || isNaN(lon)) return;
+      const [x, y] = proj4('EPSG:4326', 'NAD83CSRS_Scotford_Refinery', [lon, lat]);
+      document.getElementById('northing_refinery').value = y.toFixed(3);
+      document.getElementById('easting_refinery').value = x.toFixed(3);
+    }
+
+    function reverseTransformRefinery() {
+      const n = parseFloat(document.getElementById('northing_refinery').value);
+      const e = parseFloat(document.getElementById('easting_refinery').value);
+      if (isNaN(n) || isNaN(e)) return;
+      const [lon, lat] = proj4('NAD83CSRS_Scotford_Refinery', 'EPSG:4326', [e, n]);
+      document.getElementById('lat_refinery').value = lat.toFixed(6);
+      document.getElementById('lon_refinery').value = lon.toFixed(6);
+    }
+
+    function transformChemicals() {
+      const lat = parseFloat(document.getElementById('lat_chemicals').value);
+      const lon = parseFloat(document.getElementById('lon_chemicals').value);
+      if (isNaN(lat) || isNaN(lon)) return;
+      const [x, y] = proj4('EPSG:4326', 'NAD83CSRS_Scotford_Chemicals', [lon, lat]);
+      document.getElementById('northing_chemicals').value = y.toFixed(3);
+      document.getElementById('westing_chemicals').value = (-x).toFixed(3);
+    }
+
+    function reverseTransformChemicals() {
+      const n = parseFloat(document.getElementById('northing_chemicals').value);
+      const w = parseFloat(document.getElementById('westing_chemicals').value);
+      if (isNaN(n) || isNaN(w)) return;
+      const [lon, lat] = proj4('NAD83CSRS_Scotford_Chemicals', 'EPSG:4326', [-w, n]);
+      document.getElementById('lat_chemicals').value = lat.toFixed(6);
+      document.getElementById('lon_chemicals').value = lon.toFixed(6);
+    }
+
+    function copy(id) {
+      navigator.clipboard.writeText(document.getElementById(id).value);
+    }
+
+    function openMap(latId, lonId) {
+      const lat = parseFloat(document.getElementById(latId).value);
+      const lon = parseFloat(document.getElementById(lonId).value);
+      if (isNaN(lat) || isNaN(lon)) return alert("Invalid lat/lon");
+      const baseUrl = "https://shell.maps.arcgis.com/apps/mapviewer/index.html?webmap=80baccadd2d645419e98aab423ecf7e6";
+      const wkid = 4326;
+      const title = "Location";
+      const symbolUrl = "";
+      const text = "Selected Location";
+      const markerParam = `&marker=${lon},${lat},${wkid},${title},${symbolUrl},${text}`;
+      const mapUrl = `${baseUrl}&center=${lon},${lat}&level=20${markerParam}`;
+      window.open(mapUrl, '_blank');
+    }
+  </script>
+  <style>
+    .input-field { width: 1.5in; }
+    .button-cell { text-align: left; }
+    table { margin-left: 20px; margin-bottom: 40px; }
+    td { padding: 5px; vertical-align: middle; }
+    .section-title { font-weight: bold; margin-top: 20px; margin-left: 20px; }
+  </style>
+
+<!--[if gte mso 9]><xml>
+<mso:CustomDocumentProperties>
+<mso:SAEFCountryOfJurisdictionTaxHTField0 msdt:dt="string">Shell Canada Limited|98693a23-8dbf-4e3a-9642-7cfbec93b8c1</mso:SAEFCountryOfJurisdictionTaxHTField0>
+<mso:ice2f7984e9548f9a31773f854109466 msdt:dt="string">Internal|21aa7f98-4035-4019-a764-107acb7269af</mso:ice2f7984e9548f9a31773f854109466>
+<mso:SAEFLegalEntityTaxHTField0 msdt:dt="string">CANADA|1ee4fdd0-ab84-4217-8d9a-1bf52f1f8789</mso:SAEFLegalEntityTaxHTField0>
+<mso:TaxCatchAll msdt:dt="string">3;#CANADA;#2;#Shell Canada Limited;#1;#Internal</mso:TaxCatchAll>
+<mso:_dlc_DocId msdt:dt="string">JXZHJ46UPANF-742126557-76</mso:_dlc_DocId>
+<mso:_dlc_DocIdItemGuid msdt:dt="string">19223e7c-f663-4077-91e1-2d9952db642b</mso:_dlc_DocIdItemGuid>
+<mso:_dlc_DocIdUrl msdt:dt="string">https://eu001-sp.shell.com/sites/SPO000839/_layouts/15/DocIdRedir.aspx?ID=JXZHJ46UPANF-742126557-76, JXZHJ46UPANF-742126557-76</mso:_dlc_DocIdUrl>
+</mso:CustomDocumentProperties>
+</xml><![endif]-->
+</head>
+<body>
+  <h2>Coordinate Transformation</h2>
+
+  <div class="section-title">Refinery Coordinate System</div>
+  <table>
+    <tr><td>Northing:</td><td><input type="text" id="northing_refinery" value="2500.750" class="input-field" oninput="reverseTransformRefinery()">
+      <button onclick="copy('northing_refinery')">Copy</button></td></tr>
+    <tr><td>Easting:</td><td><input type="text" id="easting_refinery" value="2085.700" class="input-field" oninput="reverseTransformRefinery()">
+      <button onclick="copy('easting_refinery')">Copy</button></td></tr>
+    <tr><td>Latitude:</td><td><input type="text" id="lat_refinery" class="input-field" oninput="transformRefinery()">
+      <button onclick="copy('lat_refinery')">Copy</button></td></tr>
+    <tr><td>Longitude:</td><td><input type="text" id="lon_refinery" class="input-field" oninput="transformRefinery()">
+      <button onclick="copy('lon_refinery')">Copy</button></td></tr>
+    <tr><td colspan="2"><button onclick="openMap('lat_refinery','lon_refinery')">Open Map</button></td></tr>
+  </table>
+
+  <div class="section-title">Chemicals Coordinate System</div>
+  <table>
+    <tr><td>Northing:</td><td><input type="text" id="northing_chemicals" value="897.000" class="input-field" oninput="reverseTransformChemicals()">
+      <button onclick="copy('northing_chemicals')">Copy</button></td></tr>
+    <tr><td>Westing:</td><td><input type="text" id="westing_chemicals" value="470.000" class="input-field" oninput="reverseTransformChemicals()">
+      <button onclick="copy('westing_chemicals')">Copy</button></td></tr>
+    <tr><td>Latitude:</td><td><input type="text" id="lat_chemicals" class="input-field" oninput="transformChemicals()">
+      <button onclick="copy('lat_chemicals')">Copy</button></td></tr>
+    <tr><td>Longitude:</td><td><input type="text" id="lon_chemicals" class="input-field" oninput="transformChemicals()">
+      <button onclick="copy('lon_chemicals')">Copy</button></td></tr>
+    <tr><td colspan="2"><button onclick="openMap('lat_chemicals','lon_chemicals')">Open Map</button></td></tr>
+  </table>
+</body>
+</html>
